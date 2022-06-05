@@ -18,3 +18,7 @@ data class UserResponse(
             )
     }
 }
+
+data class UserEditRequest(
+    val username: String,
+)

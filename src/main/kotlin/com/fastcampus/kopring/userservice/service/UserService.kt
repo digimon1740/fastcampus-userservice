@@ -5,6 +5,7 @@ import com.fastcampus.kopring.userservice.api.model.SignInResponse
 import com.fastcampus.kopring.userservice.domain.entity.User
 import com.fastcampus.kopring.userservice.domain.repository.UserRepository
 import com.fastcampus.kopring.userservice.api.model.SignUpRequest
+import com.fastcampus.kopring.userservice.api.model.UserResponse
 import com.fastcampus.kopring.userservice.config.JWTProperties
 import com.fastcampus.kopring.userservice.exception.PasswordNotMatchedException
 import com.fastcampus.kopring.userservice.exception.UserExistsException
@@ -49,7 +50,7 @@ class UserService(
             )
         }
 
-    suspend fun get(id: Long) = userRepository.findById(id)
+    suspend fun get(id: Long) = userRepository.findById(id)?.let { UserResponse(it) }
 
 
 }
