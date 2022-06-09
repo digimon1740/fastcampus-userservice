@@ -1,4 +1,4 @@
-package com.fastcampus.kopring.userservice.api.model
+package com.fastcampus.kopring.userservice.model
 
 
 data class SignUpRequest(
@@ -17,4 +17,11 @@ data class SignInResponse(
     val username: String,
     val token: String,
     val refreshToken: String,
+)
+
+data class MeResponse(
+    val userId: Long,
+    val profileUrl: String?,
+    val username: String,
+    val email: String,
 )

@@ -37,6 +37,7 @@ dependencies {
 	implementation("at.favre.lib:bcrypt:0.9.0")
 
 	// Others
+	implementation("io.github.microutils:kotlin-logging:1.12.5")
 	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 
 	runtimeOnly("com.h2database:h2")
