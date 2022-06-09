@@ -9,7 +9,6 @@ import com.fastcampus.kopring.userservice.exception.UserNotFoundException
 import com.fastcampus.kopring.userservice.model.SignInRequest
 import com.fastcampus.kopring.userservice.model.SignInResponse
 import com.fastcampus.kopring.userservice.model.SignUpRequest
-import com.fastcampus.kopring.userservice.model.UserResponse
 import com.fastcampus.kopring.userservice.utils.BCryptUtils
 import com.fastcampus.kopring.userservice.utils.JWTClaim
 import com.fastcampus.kopring.userservice.utils.JWTUtils
@@ -54,10 +53,7 @@ class UserService(
             )
         }
 
-    suspend fun get(id: Long): UserResponse {
-        val user = userRepository.findById(id) ?: throw UserNotFoundException()
-        return UserResponse(user)
-    }
+    suspend fun get(id: Long): User = userRepository.findById(id) ?: throw UserNotFoundException()
 
 
 }

@@ -1,5 +1,6 @@
 package com.fastcampus.kopring.userservice.web
 
+import com.fastcampus.kopring.userservice.exception.InvalidJwtTokenException
 import com.fastcampus.kopring.userservice.model.MeResponse
 import com.fastcampus.kopring.userservice.model.SignInRequest
 import com.fastcampus.kopring.userservice.model.SignUpRequest
@@ -33,15 +34,8 @@ class UserController(
     suspend fun get(@RequestHeader("Authorization") authHeader: String): MeResponse {
         val token = authHeader.split(" ")[1]
         val decodedJWT = JWTUtils.decode(token, secret, issuer)
-
-        return with(decodedJWT) {
-            MeResponse(
-                userId = claims["userId"]!!.asLong(),
-                profileUrl = claims["profileUrl"]?.asString(),
-                username = claims["username"]!!.asString(),
-                email = claims["email"]!!.asString(),
-            )
-        }
+        val userId = decodedJWT.claims["userId"]?.asLong() ?: throw InvalidJwtTokenException()
+        return MeResponse(userService.get(userId))
     }
 
     @PutMapping("/{id}", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])

@@ -17,5 +17,8 @@ data class UserExistsException(
     override val message: String = "이미 존재하는 유저입니다"
 ) : ServerException(409, message)
 
+data class InvalidJwtTokenException(
+    override val message: String = "잘못된 토큰입니다"
+) : ServerException(400, message)
 
 

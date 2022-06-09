@@ -18,10 +18,3 @@ data class SignInResponse(
     val token: String,
     val refreshToken: String,
 )
-
-data class MeResponse(
-    val userId: Long,
-    val profileUrl: String?,
-    val username: String,
-    val email: String,
-)
