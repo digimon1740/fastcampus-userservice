@@ -1,6 +1,6 @@
 package com.fastcampus.kopring.userservice.exception
 
 data class ErrorResponse(
-    val status: Int,
+    val code: Int,
     val message: String,
 )

@@ -3,6 +3,7 @@ package com.fastcampus.kopring.userservice.service
 import com.fastcampus.kopring.userservice.config.JWTProperties
 import com.fastcampus.kopring.userservice.domain.entity.User
 import com.fastcampus.kopring.userservice.domain.repository.UserRepository
+import com.fastcampus.kopring.userservice.exception.InvalidJwtTokenException
 import com.fastcampus.kopring.userservice.exception.PasswordNotMatchedException
 import com.fastcampus.kopring.userservice.exception.UserExistsException
 import com.fastcampus.kopring.userservice.exception.UserNotFoundException
@@ -12,12 +13,17 @@ import com.fastcampus.kopring.userservice.model.SignUpRequest
 import com.fastcampus.kopring.userservice.utils.BCryptUtils
 import com.fastcampus.kopring.userservice.utils.JWTClaim
 import com.fastcampus.kopring.userservice.utils.JWTUtils
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 
 @Service
 class UserService(
     private val userRepository: UserRepository,
     private val jwtProperties: JWTProperties,
+    private val cacheService: CacheService,
+
+    @Value("\${jwt.secret}") private val secret: String,
+    @Value("\${jwt.issuer}") private val issuer: String,
 ) {
 
     suspend fun signUp(signUpRequest: SignUpRequest) =
@@ -45,15 +51,36 @@ class UserService(
                 profileUrl = profileUrl,
                 username = username
             )
+
+            val token = JWTUtils.createToken(jwtClaim, jwtProperties)
+            val refreshToken = JWTUtils.createRefreshToken(jwtClaim, jwtProperties)
+
+            cacheService.put(key = token, value = this)
+
             SignInResponse(
                 email = email,
                 username = username,
-                token = JWTUtils.createToken(jwtClaim, jwtProperties),
-                refreshToken = JWTUtils.createRefreshToken(jwtClaim, jwtProperties),
+                token = token,
+                refreshToken = refreshToken,
             )
         }
 
-    suspend fun get(id: Long): User = userRepository.findById(id) ?: throw UserNotFoundException()
+    suspend fun getByToken(token: String): User {
+        val decodedJWT = JWTUtils.decode(token, secret, issuer)
+        val cachedUser = cacheService.get(token)
+        if (cachedUser != null) return cachedUser
+
+        val userId = decodedJWT.claims["userId"]?.asLong() ?: throw InvalidJwtTokenException()
+        return get(userId)
+    }
+
+    suspend fun get(userId: Long): User {
+        return userRepository.findById(userId) ?: throw UserNotFoundException()
+    }
+
+    fun logout(token: String) {
+        cacheService.evict(token)
+    }
 
 
 }

@@ -1,7 +1,7 @@
 package com.fastcampus.kopring.userservice.exception
 
 sealed class ServerException(
-    val status: Int,
+    val code: Int,
     override val message: String,
 ) : RuntimeException(message)
 

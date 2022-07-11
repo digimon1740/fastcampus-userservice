@@ -20,12 +20,12 @@ class GlobalExceptionHandler(private val objectMapper: ObjectMapper) : ErrorWebE
 
     override fun handle(exchange: ServerWebExchange, ex: Throwable): Mono<Void> = mono {
 
-        logger.error(ex.stackTraceToString())
+        logger.error { ex.message }
 
         val errorResponse = if (ex is ServerException) {
-            ErrorResponse(status = ex.status, message = ex.message)
+            ErrorResponse(code = ex.code, message = ex.message)
         } else {
-            ErrorResponse(status = 500, message = "Internal Server Error")
+            ErrorResponse(code = 500, message = "Internal Server Error")
         }
 
         with(exchange.response) {
