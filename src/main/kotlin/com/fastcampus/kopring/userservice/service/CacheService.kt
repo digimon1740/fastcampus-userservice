@@ -1,21 +1,29 @@
 package com.fastcampus.kopring.userservice.service
 
-import com.fastcampus.kopring.userservice.domain.entity.User
 import org.springframework.stereotype.Service
 import java.util.concurrent.ConcurrentHashMap
 
 @Service
-class CacheService {
+class CacheService<T> {
 
-    private val localCache = ConcurrentHashMap<String, User>()
+    private val localCache = ConcurrentHashMap<String, T>()
 
-    fun put(key: String, value: User) {
+    suspend fun awaitPut(key: String, value: T) {
         localCache[key] = value
     }
 
-    fun get(key: String) = localCache[key]
+    suspend fun awaitGetOrPut(key: String, supplier: suspend () -> T): T {
+        val cached = if (localCache[key] == null) {
+            localCache[key] = supplier()
+            localCache[key]
+        } else {
+            localCache[key]
+        }
+        checkNotNull(cached)
+        return cached
+    }
 
-    fun evict(token: String) {
+    suspend fun awaitEvict(token: String) {
         localCache.remove(token)
     }
 }

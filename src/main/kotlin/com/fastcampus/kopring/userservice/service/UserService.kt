@@ -20,7 +20,7 @@ import org.springframework.stereotype.Service
 class UserService(
     private val userRepository: UserRepository,
     private val jwtProperties: JWTProperties,
-    private val cacheService: CacheService,
+    private val cacheService: CacheService<User>,
 
     @Value("\${jwt.secret}") private val secret: String,
     @Value("\${jwt.issuer}") private val issuer: String,
@@ -55,7 +55,7 @@ class UserService(
             val token = JWTUtils.createToken(jwtClaim, jwtProperties)
             val refreshToken = JWTUtils.createRefreshToken(jwtClaim, jwtProperties)
 
-            cacheService.put(key = token, value = this)
+            cacheService.awaitPut(key = token, value = this)
 
             SignInResponse(
                 email = email,
@@ -67,19 +67,19 @@ class UserService(
 
     suspend fun getByToken(token: String): User {
         val decodedJWT = JWTUtils.decode(token, secret, issuer)
-        val cachedUser = cacheService.get(token)
-        if (cachedUser != null) return cachedUser
-
-        val userId = decodedJWT.claims["userId"]?.asLong() ?: throw InvalidJwtTokenException()
-        return get(userId)
+        val cachedUser = cacheService.awaitGetOrPut(token) {
+            val userId = decodedJWT.claims["userId"]?.asLong() ?: throw InvalidJwtTokenException()
+            get(userId)
+        }
+        return cachedUser
     }
 
     suspend fun get(userId: Long): User {
         return userRepository.findById(userId) ?: throw UserNotFoundException()
     }
 
-    fun logout(token: String) {
-        cacheService.evict(token)
+    suspend fun logout(token: String) {
+        cacheService.awaitEvict(token)
     }
 
 
