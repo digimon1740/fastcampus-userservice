@@ -9,7 +9,7 @@ data class UserEditRequest(
 
 
 data class MeResponse(
-    val userId: Long,
+    val id: Long,
     val profileUrl: String?,
     val username: String,
     val email: String,
@@ -20,7 +20,7 @@ data class MeResponse(
     companion object {
         operator fun invoke(user: User) = with(user) {
             MeResponse(
-                userId = id!!,
+                id = id!!,
                 profileUrl = profileUrl,
                 username = username,
                 email = email,

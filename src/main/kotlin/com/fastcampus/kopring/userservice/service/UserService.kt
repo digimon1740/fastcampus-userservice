@@ -10,6 +10,7 @@ import com.fastcampus.kopring.userservice.exception.UserNotFoundException
 import com.fastcampus.kopring.userservice.model.SignInRequest
 import com.fastcampus.kopring.userservice.model.SignInResponse
 import com.fastcampus.kopring.userservice.model.SignUpRequest
+import com.fastcampus.kopring.userservice.model.UserEditRequest
 import com.fastcampus.kopring.userservice.utils.BCryptUtils
 import com.fastcampus.kopring.userservice.utils.JWTClaim
 import com.fastcampus.kopring.userservice.utils.JWTUtils
@@ -80,6 +81,14 @@ class UserService(
 
     suspend fun logout(token: String) {
         coroutineCacheManager.awaitEvict(token)
+    }
+
+    suspend fun edit(token: String, request: UserEditRequest): User {
+        val user = getByToken(token)
+
+        return userRepository.save(user.copy(username = request.username)).also {
+            coroutineCacheManager.awaitPut(key = token, value = it)
+        }
     }
 
 

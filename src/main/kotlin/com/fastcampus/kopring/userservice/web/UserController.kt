@@ -1,9 +1,7 @@
 package com.fastcampus.kopring.userservice.web
 
-import com.fastcampus.kopring.userservice.model.MeResponse
-import com.fastcampus.kopring.userservice.model.SignInRequest
-import com.fastcampus.kopring.userservice.model.SignUpRequest
-import com.fastcampus.kopring.userservice.model.UserEditRequest
+import com.fastcampus.kopring.userservice.domain.entity.User
+import com.fastcampus.kopring.userservice.model.*
 import com.fastcampus.kopring.userservice.service.UserService
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.springframework.http.HttpStatus
@@ -20,39 +18,45 @@ class UserController(
 
     // JWT 인증
     @PostMapping("/signup")
-    suspend fun signUp(@RequestBody signUpRequest: SignUpRequest) = userService.signUp(signUpRequest)
+    suspend fun signUp(@RequestBody signUpRequest: SignUpRequest): User {
+        return userService.signUp(signUpRequest)
+    }
 
     // JWT 인증
     @PostMapping("/signin")
-    suspend fun signIn(@RequestBody signInRequest: SignInRequest) = userService.signIn(signInRequest)
+    suspend fun signIn(@RequestBody signInRequest: SignInRequest): SignInResponse {
+        return userService.signIn(signInRequest)
+    }
 
     @GetMapping("/me")
-    suspend fun get(@RequestHeader("Authorization") authHeader: String): MeResponse {
-        val token = authHeader.split(" ")[1]
+    suspend fun get(@AuthToken token: String): MeResponse {
         return MeResponse(userService.getByToken(token))
     }
 
     @DeleteMapping("/logout")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    suspend fun logout(@RequestHeader("Authorization") authHeader: String) {
-        val token = authHeader.split(" ")[1]
+    suspend fun logout(@AuthToken token: String) {
         userService.logout(token)
     }
 
     @GetMapping("/{userId}/username")
-    suspend fun getUsername(@PathVariable userId: Long) = mapOf("reporter" to userService.get(userId).username)
+    suspend fun getUsername(@PathVariable userId: Long): Map<String, String> {
+        return mapOf("reporter" to userService.get(userId).username)
+    }
 
     @PostMapping("/{id}", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     suspend fun edit(
         @PathVariable id: Long,
         @ModelAttribute request: UserEditRequest,
+        @AuthToken token: String,
         @RequestPart("profileUrl") filePart: FilePart
     ) {
-
         val filename = "${id}-${filePart.filename()}"
         val filepath = ""
         filePart.transferTo(File("/Users/sanghoon/IdeaProjects/fastcampus-userservice/src/main/resources/${filePart.filename()}"))
             .awaitSingleOrNull()
+
+        userService.edit(token, request)
     }
 
 
