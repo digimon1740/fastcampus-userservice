@@ -1,10 +1,10 @@
 package com.fastcampus.kopring.userservice.service
 
-import org.springframework.stereotype.Service
+import org.springframework.stereotype.Component
 import java.util.concurrent.ConcurrentHashMap
 
-@Service
-class CacheService<T> {
+@Component
+class CoroutineCacheManager<T> {
 
     private val localCache = ConcurrentHashMap<String, T>()
 

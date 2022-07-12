@@ -20,7 +20,7 @@ import org.springframework.stereotype.Service
 class UserService(
     private val userRepository: UserRepository,
     private val jwtProperties: JWTProperties,
-    private val cacheService: CacheService<User>,
+    private val coroutineCacheManager: CoroutineCacheManager<User>,
 
     @Value("\${jwt.secret}") private val secret: String,
     @Value("\${jwt.issuer}") private val issuer: String,
@@ -55,7 +55,7 @@ class UserService(
             val token = JWTUtils.createToken(jwtClaim, jwtProperties)
             val refreshToken = JWTUtils.createRefreshToken(jwtClaim, jwtProperties)
 
-            cacheService.awaitPut(key = token, value = this)
+            coroutineCacheManager.awaitPut(key = token, value = this)
 
             SignInResponse(
                 email = email,
@@ -67,7 +67,7 @@ class UserService(
 
     suspend fun getByToken(token: String): User {
         val decodedJWT = JWTUtils.decode(token, secret, issuer)
-        val cachedUser = cacheService.awaitGetOrPut(token) {
+        val cachedUser = coroutineCacheManager.awaitGetOrPut(token) {
             val userId = decodedJWT.claims["userId"]?.asLong() ?: throw InvalidJwtTokenException()
             get(userId)
         }
@@ -79,7 +79,7 @@ class UserService(
     }
 
     suspend fun logout(token: String) {
-        cacheService.awaitEvict(token)
+        coroutineCacheManager.awaitEvict(token)
     }
 
 
