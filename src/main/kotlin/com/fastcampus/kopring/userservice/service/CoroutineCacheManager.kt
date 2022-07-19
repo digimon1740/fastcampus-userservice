@@ -24,8 +24,6 @@ class CoroutineCacheManager<T> {
         supplier: suspend () -> T,
     ): T {
         val now = Instant.now()
-        logger.info { "localCache $localCache" }
-
         val cacheWrapper = localCache[key]
 
         val cached = if (cacheWrapper == null) {
