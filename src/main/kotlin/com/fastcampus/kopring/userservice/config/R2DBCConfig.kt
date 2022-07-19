@@ -17,4 +17,5 @@ class R2DBCConfig {
             setConnectionFactory(connectionFactory)
             setDatabasePopulator(ResourceDatabasePopulator(ClassPathResource("scripts/schema.sql")))
         }
+
 }

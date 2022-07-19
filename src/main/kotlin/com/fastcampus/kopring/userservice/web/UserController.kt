@@ -1,6 +1,5 @@
 package com.fastcampus.kopring.userservice.web
 
-import com.fastcampus.kopring.userservice.domain.entity.User
 import com.fastcampus.kopring.userservice.model.*
 import com.fastcampus.kopring.userservice.service.UserService
 import kotlinx.coroutines.reactor.awaitSingleOrNull
@@ -18,8 +17,8 @@ class UserController(
 
     // JWT 인증
     @PostMapping("/signup")
-    suspend fun signUp(@RequestBody signUpRequest: SignUpRequest): User {
-        return userService.signUp(signUpRequest)
+    suspend fun signUp(@RequestBody signUpRequest: SignUpRequest) {
+        userService.signUp(signUpRequest)
     }
 
     // JWT 인증
@@ -50,13 +49,13 @@ class UserController(
         @ModelAttribute request: UserEditRequest,
         @AuthToken token: String,
         @RequestPart("profileUrl") filePart: FilePart
-    ) {
+    ): MeResponse {
         val filename = "${id}-${filePart.filename()}"
         val filepath = ""
         filePart.transferTo(File("/Users/sanghoon/IdeaProjects/fastcampus-userservice/src/main/resources/${filePart.filename()}"))
             .awaitSingleOrNull()
 
-        userService.edit(token, request)
+        return MeResponse(userService.edit(token, request))
     }
 
 

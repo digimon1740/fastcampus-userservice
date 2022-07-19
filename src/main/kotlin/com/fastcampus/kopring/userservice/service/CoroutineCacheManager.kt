@@ -1,29 +1,54 @@
 package com.fastcampus.kopring.userservice.service
 
+import mu.KotlinLogging
 import org.springframework.stereotype.Component
+import java.time.Duration
+import java.time.Instant
 import java.util.concurrent.ConcurrentHashMap
 
 @Component
 class CoroutineCacheManager<T> {
 
-    private val localCache = ConcurrentHashMap<String, T>()
+    private val localCache = ConcurrentHashMap<String, CacheWrapper<T>>()
 
-    suspend fun awaitPut(key: String, value: T) {
-        localCache[key] = value
+
+    private val logger = KotlinLogging.logger {}
+
+    suspend fun awaitPut(key: String, value: T, ttl: Duration) {
+        localCache[key] = CacheWrapper(value, Instant.now().plusMillis(ttl.toMillis()))
     }
 
-    suspend fun awaitGetOrPut(key: String, supplier: suspend () -> T): T {
-        val cached = if (localCache[key] == null) {
-            localCache[key] = supplier()
-            localCache[key]
+    suspend fun awaitGetOrPut(
+        key: String,
+        ttl: Duration? = Duration.ofMinutes(5),
+        supplier: suspend () -> T,
+    ): T {
+        val now = Instant.now()
+        logger.info { "localCache $localCache" }
+
+        val cacheWrapper = localCache[key]
+
+        val cached = if (cacheWrapper == null) {
+            CacheWrapper(supplier(), now.plusMillis(ttl!!.toMillis())).also {
+                localCache[key] = it
+            }
+
+        } else if (now.isAfter(cacheWrapper.ttl)) {
+            localCache.remove(key)
+            CacheWrapper(supplier(), now.plusMillis(ttl!!.toMillis())).also {
+                localCache[key] = it
+            }
         } else {
-            localCache[key]
+            cacheWrapper
         }
-        checkNotNull(cached)
-        return cached
+
+        checkNotNull(cached.cached)
+        return cached.cached
     }
 
-    suspend fun awaitEvict(token: String) {
-        localCache.remove(token)
+    suspend fun awaitEvict(key: String) {
+        localCache.remove(key)
     }
+
+    data class CacheWrapper<T>(val cached: T, val ttl: Instant)
 }

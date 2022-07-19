@@ -16,6 +16,7 @@ import com.fastcampus.kopring.userservice.utils.JWTClaim
 import com.fastcampus.kopring.userservice.utils.JWTUtils
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
+import java.time.Duration
 
 @Service
 class UserService(
@@ -26,6 +27,10 @@ class UserService(
     @Value("\${jwt.secret}") private val secret: String,
     @Value("\${jwt.issuer}") private val issuer: String,
 ) {
+
+    companion object {
+        private val CACHE_TTL = Duration.ofMinutes(1)
+    }
 
     suspend fun signUp(signUpRequest: SignUpRequest) =
         with(signUpRequest) {
@@ -56,7 +61,7 @@ class UserService(
             val token = JWTUtils.createToken(jwtClaim, jwtProperties)
             val refreshToken = JWTUtils.createRefreshToken(jwtClaim, jwtProperties)
 
-            coroutineCacheManager.awaitPut(key = token, value = this)
+            coroutineCacheManager.awaitPut(key = token, value = this, ttl = CACHE_TTL)
 
             SignInResponse(
                 email = email,
@@ -68,7 +73,7 @@ class UserService(
 
     suspend fun getByToken(token: String): User {
         val decodedJWT = JWTUtils.decode(token, secret, issuer)
-        val cachedUser = coroutineCacheManager.awaitGetOrPut(token) {
+        val cachedUser = coroutineCacheManager.awaitGetOrPut(key = token, ttl = CACHE_TTL) {
             val userId = decodedJWT.claims["userId"]?.asLong() ?: throw InvalidJwtTokenException()
             get(userId)
         }
@@ -87,9 +92,8 @@ class UserService(
         val user = getByToken(token)
 
         return userRepository.save(user.copy(username = request.username)).also {
-            coroutineCacheManager.awaitPut(key = token, value = it)
+            coroutineCacheManager.awaitPut(key = token, value = it, ttl = CACHE_TTL)
         }
     }
-
 
 }
