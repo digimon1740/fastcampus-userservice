@@ -6,6 +6,4 @@ jwt:
   issuer: jara
   subject: auth
   expires-time: 3600 # 1시간
-  refresh-expires-time: 86400 # 1일
   secret: my-secret
-  refresh-secret: my-refresh-secret

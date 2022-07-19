@@ -59,7 +59,6 @@ class UserService(
             )
 
             val token = JWTUtils.createToken(jwtClaim, jwtProperties)
-            val refreshToken = JWTUtils.createRefreshToken(jwtClaim, jwtProperties)
 
             coroutineCacheManager.awaitPut(key = token, value = this, ttl = CACHE_TTL)
 
@@ -67,7 +66,6 @@ class UserService(
                 email = email,
                 username = username,
                 token = token,
-                refreshToken = refreshToken,
             )
         }
 

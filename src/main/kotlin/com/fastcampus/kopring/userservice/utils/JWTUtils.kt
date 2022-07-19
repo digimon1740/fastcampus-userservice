@@ -22,19 +22,6 @@ object JWTUtils {
             .sign(HMAC256(properties.secret))
 
 
-    fun createRefreshToken(claim: JWTClaim, properties: JWTProperties) =
-        JWT.create()
-            .withIssuer(properties.issuer)
-            .withSubject(properties.subject)
-            .withIssuedAt(Date())
-            .withExpiresAt(Date(Date().time + properties.refreshExpiresTime * 1000))
-            .withClaim("userId", claim.userId)
-            .withClaim("profileUrl", claim.profileUrl)
-            .withClaim("username", claim.username)
-            .withClaim("email", claim.email)
-            .sign(HMAC256(properties.refreshSecret))
-
-
     fun decode(token: String, secret: String, issuer: String): DecodedJWT {
         val algorithm = HMAC256(secret)
 

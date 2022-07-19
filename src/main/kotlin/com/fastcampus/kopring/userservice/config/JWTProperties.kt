@@ -10,7 +10,5 @@ data class JWTProperties(
     val issuer: String,
     val subject: String,
     val expiresTime: Long,
-    val refreshExpiresTime: Long,
     val secret: String,
-    val refreshSecret: String,
 )
