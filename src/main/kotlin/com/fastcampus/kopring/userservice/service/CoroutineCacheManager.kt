@@ -1,6 +1,5 @@
 package com.fastcampus.kopring.userservice.service
 
-import mu.KotlinLogging
 import org.springframework.stereotype.Component
 import java.time.Duration
 import java.time.Instant
@@ -10,9 +9,6 @@ import java.util.concurrent.ConcurrentHashMap
 class CoroutineCacheManager<T> {
 
     private val localCache = ConcurrentHashMap<String, CacheWrapper<T>>()
-
-
-    private val logger = KotlinLogging.logger {}
 
     suspend fun awaitPut(key: String, value: T, ttl: Duration) {
         localCache[key] = CacheWrapper(value, Instant.now().plusMillis(ttl.toMillis()))
