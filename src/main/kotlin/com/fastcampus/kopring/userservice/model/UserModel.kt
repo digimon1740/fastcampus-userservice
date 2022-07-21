@@ -21,7 +21,7 @@ data class MeResponse(
         operator fun invoke(user: User) = with(user) {
             MeResponse(
                 id = id!!,
-                profileUrl = profileUrl,
+                profileUrl = "http://localhost:9090/images/$profileUrl",
                 username = username,
                 email = email,
                 createdAt = createdAt,

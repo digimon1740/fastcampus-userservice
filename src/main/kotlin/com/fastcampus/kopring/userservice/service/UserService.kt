@@ -10,11 +10,9 @@ import com.fastcampus.kopring.userservice.exception.UserNotFoundException
 import com.fastcampus.kopring.userservice.model.SignInRequest
 import com.fastcampus.kopring.userservice.model.SignInResponse
 import com.fastcampus.kopring.userservice.model.SignUpRequest
-import com.fastcampus.kopring.userservice.model.UserEditRequest
 import com.fastcampus.kopring.userservice.utils.BCryptUtils
 import com.fastcampus.kopring.userservice.utils.JWTClaim
 import com.fastcampus.kopring.userservice.utils.JWTUtils
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import java.time.Duration
 
@@ -23,9 +21,6 @@ class UserService(
     private val userRepository: UserRepository,
     private val jwtProperties: JWTProperties,
     private val coroutineCacheManager: CoroutineCacheManager<User>,
-
-    @Value("\${jwt.secret}") private val secret: String,
-    @Value("\${jwt.issuer}") private val issuer: String,
 ) {
 
     companion object {
@@ -70,7 +65,7 @@ class UserService(
         }
 
     suspend fun getByToken(token: String): User {
-        val decodedJWT = JWTUtils.decode(token, secret, issuer)
+        val decodedJWT = JWTUtils.decode(token, jwtProperties.secret, jwtProperties.issuer)
         val cachedUser = coroutineCacheManager.awaitGetOrPut(key = token, ttl = CACHE_TTL) {
             val userId = decodedJWT.claims["userId"]?.asLong() ?: throw InvalidJwtTokenException()
             get(userId)
@@ -86,10 +81,11 @@ class UserService(
         coroutineCacheManager.awaitEvict(token)
     }
 
-    suspend fun edit(token: String, request: UserEditRequest): User {
+    suspend fun edit(token: String, username: String, profileUrl: String? = null): User {
         val user = getByToken(token)
+        val newUser = user.copy(username = username, profileUrl = profileUrl ?: user.profileUrl)
 
-        return userRepository.save(user.copy(username = request.username)).also {
+        return userRepository.save(newUser).also {
             coroutineCacheManager.awaitPut(key = token, value = it, ttl = CACHE_TTL)
         }
     }

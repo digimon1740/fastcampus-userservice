@@ -7,13 +7,15 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.codec.multipart.FilePart
 import org.springframework.web.bind.annotation.*
-import java.io.File
+import java.nio.file.Paths
 
 @RestController
 @RequestMapping("/api/v1/users")
 class UserController(
     private val userService: UserService,
 ) {
+
+    val path by lazy { Paths.get("./src/main/resources/images/") }
 
     // JWT 인증
     @PostMapping("/signup")
@@ -28,7 +30,9 @@ class UserController(
     }
 
     @GetMapping("/me")
-    suspend fun get(@AuthToken token: String): MeResponse {
+    suspend fun get(
+        @AuthToken token: String,
+    ): MeResponse {
         return MeResponse(userService.getByToken(token))
     }
 
@@ -49,14 +53,16 @@ class UserController(
         @ModelAttribute request: UserEditRequest,
         @AuthToken token: String,
         @RequestPart("profileUrl") filePart: FilePart
-    ): MeResponse {
-        val filename = "${id}-${filePart.filename()}"
-        val filepath = ""
-        filePart.transferTo(File("/Users/sanghoon/IdeaProjects/fastcampus-userservice/src/main/resources/${filePart.filename()}"))
-            .awaitSingleOrNull()
+    ) {
+        val orgFilename = filePart.filename()
+        var filename: String? = null
+        if (orgFilename.isNotEmpty()) {
+            val ext = orgFilename.substring(orgFilename.lastIndexOf(".") + 1)
+            filename = "${id}.${ext}"
+            filePart.transferTo(path.resolve(filename)).awaitSingleOrNull()
+        }
 
-        return MeResponse(userService.edit(token, request))
+        userService.edit(token, request.username, filename)
     }
-
 
 }
