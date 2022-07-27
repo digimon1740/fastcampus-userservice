@@ -1,5 +1,4 @@
-package com.fastcampus.kopring.userservice.model
-
+package com.fastcampus.userservice.model
 
 data class SignUpRequest(
     val email: String,

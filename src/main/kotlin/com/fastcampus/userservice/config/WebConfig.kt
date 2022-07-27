@@ -1,6 +1,6 @@
-package com.fastcampus.kopring.userservice.config
+package com.fastcampus.userservice.config
 
-import com.fastcampus.kopring.userservice.model.AuthToken
+import com.fastcampus.userservice.model.AuthToken
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.MethodParameter
 import org.springframework.stereotype.Component
@@ -45,6 +45,7 @@ class AuthTokenResolver : HandlerMethodArgumentResolver {
 
         val authHeader = exchange.request.headers["Authorization"]?.first()
         checkNotNull(authHeader)
+
         val token = authHeader.split(" ")[1]
         return token.toMono()
     }

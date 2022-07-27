@@ -1,7 +1,7 @@
 server:
   port: 9090
 
-# jwt
+
 jwt:
   issuer: jara
   subject: auth

@@ -1,4 +1,4 @@
-package com.fastcampus.kopring.userservice.utils
+package com.fastcampus.userservice.utils
 
 import at.favre.lib.crypto.bcrypt.BCrypt
 

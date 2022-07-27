@@ -1,4 +1,4 @@
-package com.fastcampus.kopring.userservice.service
+package com.fastcampus.userservice.service
 
 import org.springframework.stereotype.Component
 import java.time.Duration
@@ -11,7 +11,11 @@ class CoroutineCacheManager<T> {
     private val localCache = ConcurrentHashMap<String, CacheWrapper<T>>()
 
     suspend fun awaitPut(key: String, value: T, ttl: Duration) {
-        localCache[key] = CacheWrapper(value, Instant.now().plusMillis(ttl.toMillis()))
+        localCache[key] = CacheWrapper(cached = value, Instant.now().plusMillis(ttl.toMillis()))
+    }
+
+    suspend fun awaitEvict(key: String) {
+        localCache.remove(key)
     }
 
     suspend fun awaitGetOrPut(
@@ -23,13 +27,13 @@ class CoroutineCacheManager<T> {
         val cacheWrapper = localCache[key]
 
         val cached = if (cacheWrapper == null) {
-            CacheWrapper(supplier(), now.plusMillis(ttl!!.toMillis())).also {
+            CacheWrapper(cached = supplier(), ttl = now.plusMillis(ttl!!.toMillis())).also {
                 localCache[key] = it
             }
-
         } else if (now.isAfter(cacheWrapper.ttl)) {
+            // 캐시 ttl이 지난 경우
             localCache.remove(key)
-            CacheWrapper(supplier(), now.plusMillis(ttl!!.toMillis())).also {
+            CacheWrapper(cached = supplier(), ttl = now.plusMillis(ttl!!.toMillis())).also {
                 localCache[key] = it
             }
         } else {
@@ -40,9 +44,6 @@ class CoroutineCacheManager<T> {
         return cached.cached
     }
 
-    suspend fun awaitEvict(key: String) {
-        localCache.remove(key)
-    }
 
     data class CacheWrapper<T>(val cached: T, val ttl: Instant)
 }

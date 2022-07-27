@@ -1,4 +1,4 @@
-package com.fastcampus.kopring.userservice.config
+package com.fastcampus.userservice.config
 
 import io.r2dbc.spi.ConnectionFactory
 import org.springframework.context.annotation.Bean
@@ -7,7 +7,6 @@ import org.springframework.core.io.ClassPathResource
 import org.springframework.r2dbc.connection.init.ConnectionFactoryInitializer
 import org.springframework.r2dbc.connection.init.ResourceDatabasePopulator
 
-// 초기 세팅
 @Configuration
 class R2DBCConfig {
 
@@ -17,5 +16,4 @@ class R2DBCConfig {
             setConnectionFactory(connectionFactory)
             setDatabasePopulator(ResourceDatabasePopulator(ClassPathResource("scripts/schema.sql")))
         }
-
 }

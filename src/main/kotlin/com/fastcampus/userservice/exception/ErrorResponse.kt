@@ -1,4 +1,4 @@
-package com.fastcampus.kopring.userservice.exception
+package com.fastcampus.userservice.exception
 
 data class ErrorResponse(
     val code: Int,

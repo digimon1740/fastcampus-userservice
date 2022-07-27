@@ -1,12 +1,11 @@
-package com.fastcampus.kopring.userservice.model
+package com.fastcampus.userservice.model
 
-import com.fastcampus.kopring.userservice.domain.entity.User
+import com.fastcampus.userservice.domain.entity.User
 import java.time.LocalDateTime
 
 data class UserEditRequest(
     val username: String,
 )
-
 
 data class MeResponse(
     val id: Long,
@@ -18,15 +17,19 @@ data class MeResponse(
 ) {
 
     companion object {
+
         operator fun invoke(user: User) = with(user) {
             MeResponse(
                 id = id!!,
-                profileUrl = "http://localhost:9090/images/$profileUrl",
+                profileUrl = if (profileUrl.isNullOrEmpty()) null else "http://localhost:9090/images/$profileUrl",
                 username = username,
                 email = email,
                 createdAt = createdAt,
                 updatedAt = updatedAt,
             )
+
         }
+
+
     }
 }

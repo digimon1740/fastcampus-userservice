@@ -1,9 +1,8 @@
-package com.fastcampus.kopring.userservice.config
+package com.fastcampus.userservice.config
 
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.boot.context.properties.ConstructorBinding
 
-// JWT 인증
 @ConstructorBinding
 @ConfigurationProperties(prefix = "jwt")
 data class JWTProperties(

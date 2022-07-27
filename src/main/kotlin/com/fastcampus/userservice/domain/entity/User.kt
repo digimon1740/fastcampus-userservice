@@ -1,4 +1,4 @@
-package com.fastcampus.kopring.userservice.domain.entity
+package com.fastcampus.userservice.domain.entity
 
 import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.annotation.Id
@@ -11,7 +11,7 @@ import java.time.LocalDateTime
 data class User(
 
     @Id
-    var id: Long? = null,
+    val id: Long? = null,
 
     @Column
     val email: String,
@@ -26,8 +26,10 @@ data class User(
     val profileUrl: String? = null,
 
     @CreatedDate
+    @Column("created_at")
     val createdAt: LocalDateTime? = null,
 
     @LastModifiedDate
+    @Column("updated_at")
     val updatedAt: LocalDateTime? = null,
 )

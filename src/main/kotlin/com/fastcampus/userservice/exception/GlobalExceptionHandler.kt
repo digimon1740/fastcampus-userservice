@@ -1,7 +1,7 @@
-package com.fastcampus.kopring.userservice.exception
+package com.fastcampus.userservice.exception
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import kotlinx.coroutines.reactive.awaitFirstOrNull
+import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.mono
 import mu.KotlinLogging
 import org.springframework.boot.web.reactive.error.ErrorWebExceptionHandler
@@ -15,12 +15,11 @@ import reactor.kotlin.core.publisher.toMono
 @Configuration
 class GlobalExceptionHandler(private val objectMapper: ObjectMapper) : ErrorWebExceptionHandler {
 
-
     private val logger = KotlinLogging.logger {}
 
     override fun handle(exchange: ServerWebExchange, ex: Throwable): Mono<Void> = mono {
 
-        logger.error { ex.message }
+        logger.error { ex.printStackTrace() }
 
         val errorResponse = if (ex is ServerException) {
             ErrorResponse(code = ex.code, message = ex.message)
@@ -31,9 +30,11 @@ class GlobalExceptionHandler(private val objectMapper: ObjectMapper) : ErrorWebE
         with(exchange.response) {
             statusCode = HttpStatus.OK
             headers.contentType = MediaType.APPLICATION_JSON
+
             val dataBuffer = bufferFactory().wrap(objectMapper.writeValueAsBytes(errorResponse))
-            exchange.response.writeWith(dataBuffer.toMono()).awaitFirstOrNull()
+            writeWith(dataBuffer.toMono()).awaitSingle()
         }
     }
+
 
 }

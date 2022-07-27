@@ -1,4 +1,4 @@
-package com.fastcampus.kopring.userservice.model
+package com.fastcampus.userservice.model
 
 @Target(AnnotationTarget.VALUE_PARAMETER)
 @Retention(AnnotationRetention.RUNTIME)
